@@ -1,0 +1,7 @@
+# env files (anywhere)
+.env
+**/.env
+
+# OS files
+.DS_Store
+Thumbs.db
