@@ -3,6 +3,7 @@ import cors from 'cors';
 import 'dotenv/config';
 import connectDB from './configs/db.js';
 import { inngest, functions } from "./inggest/index.js";
+import { serve } from "inngest/express";
 
 const app = express();
 
@@ -17,6 +18,9 @@ app.use(cors());
 app.get('/', (req, res) => {
   res.send('Hello from the server!');
 });
+
+// Set up the "/api/inngest" (recommended) routes with the serve handler
+app.use("/api/inngest", serve({ client: inngest, functions }));
 
 // Start the server
 const PORT = process.env.PORT || 4000;
