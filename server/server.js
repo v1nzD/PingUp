@@ -4,6 +4,8 @@ import 'dotenv/config';
 import connectDB from './configs/db.js';
 import { inngest, functions } from "./inggest/index.js";
 import { serve } from "inngest/express";
+import { clerkMidleware } from '@clerk/express';
+
 
 const app = express();
 
@@ -13,6 +15,7 @@ await connectDB();
 // Middleware
 app.use(express.json());
 app.use(cors());
+app.use(clerkMidleware());
 
 // Sample route
 app.get('/', (req, res) => {
