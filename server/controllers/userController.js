@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import Connection from "../models/Connection.js";
 import fs from "fs";
 import imageKit from "../configs/imageKit.js";
 
@@ -111,7 +112,6 @@ export const discoverUsers = async (req, res) => {
     // exclude the current user from the results
     const filteredUsers = allUsers.filter((user) => user._id !== userId);
     res.json({ success: true, message: "Users found", data: filteredUsers });
-
   } catch (error) {
     console.log(error);
     return res.json({ success: false, message: error.message });
@@ -127,8 +127,10 @@ export const followUser = async (req, res) => {
     const user = await User.findById(userId);
 
     // user already following the user
-    if(user.following.includes(id)) {
-        return res.status(400).json({ success: false, message: "Already following the user" });
+    if (user.following.includes(id)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Already following the user" });
     }
 
     // add user to following list
@@ -141,7 +143,6 @@ export const followUser = async (req, res) => {
     await toUser.save();
 
     res.json({ success: true, message: "User followed successfully" });
-
   } catch (error) {
     console.log(error);
     return res.json({ success: false, message: error.message });
@@ -166,9 +167,49 @@ export const unfollowUser = async (req, res) => {
     await toUser.save();
 
     res.json({ success: true, message: "User unfollowed successfully" });
-
   } catch (error) {
     console.log(error);
     return res.json({ success: false, message: error.message });
   }
+};
+
+// Send connection request to a user
+export const sendConnectionRequest = async (req, res) => {
+  try {
+    const { userId } = req.auth;
+    const { id } = req.body;
+
+    // Check if user has sent more than 20 connection requests in the last 24 hours
+    const last24hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const connectionRequests = await Connection.find({
+      from_user_id: userId,
+      createdAt: { $gte: last24hours },
+    });
+    if (connectionRequests.length >= 20) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "You have reached the limit of 20 connection requests in the last 24 hours",
+      });
+    }
+
+    // Check if users are already connected
+    const connection = await Connection.findOne({
+      $or: [
+        { from_user_id: userId, to_user_id: id },
+        { from_user_id: id, to_user_id: userId },
+      ],
+    });
+    if (!connection) {
+      await Connection.create({ from_user_id: userId, to_user_id: id });
+      return res.json({ success: true, message: "Connection request sent" });
+    } else if (connection && connection.status === "accepted") {
+      return res
+        .status(400)
+        .json({ success: false, message: "You are already connected" });
+    }
+    return res
+      .status(400)
+      .json({ success: false, message: "Connection pending" });
+  } catch (error) {}
 };
