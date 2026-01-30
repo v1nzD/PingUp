@@ -26,6 +26,7 @@ app.get('/', (req, res) => {
 // Set up the "/api/inngest" (recommended) routes with the serve handler
 app.use("/api/inngest", serve({ client: inngest, functions }));
 
+// User routes
 app.use('/api/users', userRouter)
 
 // Start the server
