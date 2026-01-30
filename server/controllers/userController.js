@@ -1,6 +1,6 @@
-import User from "../models/User";
+import User from "../models/User.js";
 import fs from "fs";
-import imageKit from "../configs/imageKit";
+import imageKit from "../configs/imageKit.js";
 
 // Get user data using userId
 export const getUserData = async (req, res) => {
@@ -10,10 +10,10 @@ export const getUserData = async (req, res) => {
     if (!user) {
       return res.json({ success: false, message: "User not found" });
     }
-    res.json({ success: true, message: "User found" });
+    res.json({ success: true, message: "User found", user });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ success: false, message: error.message });
+    return res.json({ success: false, message: error.message });
   }
 };
 
@@ -90,7 +90,7 @@ export const updateUserData = async (req, res) => {
     res.json({ success: true, message: "User updated", data: user });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ success: false, message: error.message });
+    return res.json({ success: false, message: error.message });
   }
 };
 
@@ -114,7 +114,7 @@ export const discoverUsers = async (req, res) => {
 
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ success: false, message: error.message });
+    return res.json({ success: false, message: error.message });
   }
 };
 
@@ -144,7 +144,7 @@ export const followUser = async (req, res) => {
 
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ success: false, message: error.message });
+    return res.json({ success: false, message: error.message });
   }
 };
 
@@ -169,6 +169,6 @@ export const unfollowUser = async (req, res) => {
 
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ success: false, message: error.message });
+    return res.json({ success: false, message: error.message });
   }
 };
