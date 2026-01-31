@@ -200,9 +200,11 @@ export const sendConnectionRequest = async (req, res) => {
         { from_user_id: id, to_user_id: userId },
       ],
     });
+
     if (!connection) {
       await Connection.create({ from_user_id: userId, to_user_id: id });
       return res.json({ success: true, message: "Connection request sent" });
+      
     } else if (connection && connection.status === "accepted") {
       return res
         .status(400)
@@ -211,5 +213,65 @@ export const sendConnectionRequest = async (req, res) => {
     return res
       .status(400)
       .json({ success: false, message: "Connection pending" });
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+    return res.json({ success: false, message: error.message });
+  }
+};
+
+// Get user connections
+export const getUserConnections = async (req, res) => {
+  try {
+    const { userId } = req.auth;
+    const user = await User.findById(userId).populate("connections followers following");
+
+    const connections = user.connections
+    const followers = user.followers
+    const following = user.following
+
+    const pendingConnections = (await Connection.find({
+      to_user_id: userId,
+      status: "pending",
+    }).populate("from_user_id")).map(connection => connection.from_user_id);
+
+    return res.json({ success: true, message: "Connections found", data: { connections, followers, following, pendingConnections } });
+
+  } catch (error) {
+    console.log(error);
+    return res.json({ success: false, message: error.message });
+  }
+};
+
+// Accept connection request
+export const acceptConnectionRequest = async (req, res) => {
+  try {
+    const { userId } = req.auth;
+    const { id } = req.body;
+
+    const connection = await Connection.findOne({
+      from_user_id: id,
+      to_user_id: userId,
+    });
+
+    if (!connection) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Connection request not found" });
+    }
+
+    const user = await User.findById(userId);
+    user.connections.push(id);
+    await user.save();
+
+    const toUser = await User.findById(id);
+    toUser.connections.push(userId);
+    await toUser.save();
+
+    connection.status = "accepted";
+    await connection.save();
+
+  } catch (error) {
+    console.log(error);
+    return res.json({ success: false, message: error.message });
+  }
 };
