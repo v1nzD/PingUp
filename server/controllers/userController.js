@@ -270,6 +270,8 @@ export const acceptConnectionRequest = async (req, res) => {
     connection.status = "accepted";
     await connection.save();
 
+    res.json({ success: true, message: "Connection request accepted" });
+
   } catch (error) {
     console.log(error);
     return res.json({ success: false, message: error.message });
