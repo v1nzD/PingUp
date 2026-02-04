@@ -2,6 +2,8 @@ import User from "../models/User.js";
 import Connection from "../models/Connection.js";
 import fs from "fs";
 import imageKit from "../configs/imageKit.js";
+import Post from "../models/Post.js";
+import { inngest } from "../inngest/index.js";
 
 // Get user data using userId
 export const getUserData = async (req, res) => {
@@ -202,7 +204,14 @@ export const sendConnectionRequest = async (req, res) => {
     });
 
     if (!connection) {
-      await Connection.create({ from_user_id: userId, to_user_id: id });
+      const newConnection = await Connection.create({ from_user_id: userId, to_user_id: id });
+
+      // runs inngest function to send connection request reminder email
+      await inngest.send({
+        name: 'app/connection-request',
+        data: {connectionId: newConnection._id}
+      })
+
       return res.json({ success: true, message: "Connection request sent" });
       
     } else if (connection && connection.status === "accepted") {
@@ -277,3 +286,21 @@ export const acceptConnectionRequest = async (req, res) => {
     return res.json({ success: false, message: error.message });
   }
 };
+
+// Get user profile
+export const getUserProfile = async (req, res) => {
+  try {
+    const { profileId } = req.body
+    const profile = await User.findById(profileId)
+
+    if(!profile){
+      return res.json({success: false, message: "Profile not found"})
+    }
+
+    const posts = await Post.find({user: profileId}).populate('user')
+    res.json({success: true, profile, posts})
+  } catch (error) {
+    return res.json({ success: false, message: error.message });
+    
+  }
+}
