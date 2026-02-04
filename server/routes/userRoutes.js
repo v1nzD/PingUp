@@ -5,6 +5,7 @@ import {
   followUser,
   getUserConnections,
   getUserData,
+  getUserProfile,
   sendConnectionRequest,
   unfollowUser,
   updateUserData,
@@ -31,5 +32,6 @@ userRouter.post("/unfollow", protect, unfollowUser);
 userRouter.post("/connect", protect, sendConnectionRequest);
 userRouter.post("/accept", protect, acceptConnectionRequest);
 userRouter.get("/connections", protect, getUserConnections);
+userRouter.post('/profiles', protect, getUserProfile)
 
 export default userRouter;
