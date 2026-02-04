@@ -2,10 +2,11 @@ import express from 'express';
 import cors from 'cors';
 import 'dotenv/config';
 import connectDB from './configs/db.js';
-import { inngest, functions } from "./inggest/index.js";
+import { inngest, functions } from "./inngest/index.js";
 import { serve } from "inngest/express";
 import { clerkMiddleware } from '@clerk/express';
 import userRouter from './routes/userRoutes.js';
+import postRouter from './routes/postRoutes.js';
 
 
 const app = express();
@@ -28,6 +29,9 @@ app.use("/api/inngest", serve({ client: inngest, functions }));
 
 // User routes
 app.use('/api/users', userRouter)
+
+// Post routes
+app.use('/api/posts', postRouter)
 
 // Start the server
 const PORT = process.env.PORT || 4000;
