@@ -8,6 +8,7 @@ import { clerkMiddleware } from '@clerk/express';
 import userRouter from './routes/userRoutes.js';
 import postRouter from './routes/postRoutes.js';
 import storyRouter from './routes/storyRoutes.js';
+import messageRouter from './routes/messageRoutes.js';
 
 
 const app = express();
@@ -35,7 +36,10 @@ app.use('/api/users', userRouter)
 app.use('/api/posts', postRouter)
 
 // Story routes
-app.use('/api.story', storyRouter)
+app.use('/api/story', storyRouter)
+
+// Message routes
+app.use('/api/message', messageRouter)
 
 // Start the server
 const PORT = process.env.PORT || 4000;
