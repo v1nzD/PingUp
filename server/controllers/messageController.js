@@ -1,6 +1,6 @@
 import fs from "fs";
-import imageKit from "../configs/imageKit";
-import Message from "../models/Message";
+import imageKit from "../configs/imageKit.js";
+import Message from "../models/Message.js";
 
 // Store server-side event connections
 const connections = {};
