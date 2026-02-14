@@ -1,16 +1,59 @@
 import React, { useState } from "react";
-import { dummyUserData } from "../assets/assets";
+// import { dummyUserData } from "../assets/assets";
 import { ImageIcon, X } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { useSelector } from "react-redux";
+import { useAuth } from "@clerk/clerk-react";
+import api from "../api/axios";
+import { useNavigate } from "react-router-dom";
 
 const CreatePost = () => {
+  const navigate = useNavigate();
   const [content, setContent] = useState("");
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const user = dummyUserData;
+  const user = useSelector((state) => state.user.value);
 
-  const handleSubmit = async () => {};
+  const { getToken } = useAuth();
+
+  const handleSubmit = async () => {
+    if (!images.length && !content) {
+      return toast.error("Please add at least one image or text");
+    }
+    setLoading(true);
+
+    const postType =
+      images.length && content
+        ? "text_with_image"
+        : images.length
+          ? "image"
+          : "text";
+    try {
+      const formData = new FormData();
+      formData.append("content", content);
+      formData.append("post_type", postType);
+      images.map((image) => {
+        formData.append("images", image);
+      });
+
+      const { data } = await api.post("/api/post/add", formData, {
+        headers: {
+          Authorization: `Bearer ${await getToken()}`,
+        },
+      });
+
+      if (data.success) {
+        navigate("/");
+      } else {
+        console.log(data.message);
+        throw new Error(data.message);
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+    setLoading(false);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
@@ -38,15 +81,6 @@ const CreatePost = () => {
             </div>
           </div>
 
-          {/* Textarea */}
-          {/* <div className="flex flex-col w-full resize-none max-h-20 mt-4 text-sm outline-none placeholder-gray-400">
-            <input
-              type="text"
-              placeholder="What's happening?"
-              className="mt-5"
-            />
-            <span className="border-solid border-1 border-gray-200 mt-12"></span>
-          </div> */}
           <textarea
             className="w-full resize-none max-h-20 mt-4 text-sm outline-none placeholder-gray-400"
             placeholder="What's happening?"

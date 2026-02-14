@@ -18,7 +18,7 @@ export const addUserStory = async (req, res) => {
 
       const response = await imageKit.upload({
         file: fileBuffer,
-        fileName: media.originalName,
+        fileName: media.originalname,
       });
       media_url = response.url;
     }
@@ -57,7 +57,7 @@ export const getStories = async (req, res) => {
     })
       .populate("user")
       .sort({ createdAt: -1 });
-    return res.json({ success: true });
+    return res.json({ success: true, stories });
   } catch (error) {
     return res.json({ success: false, message: error.message });
   }

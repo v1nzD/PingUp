@@ -1,9 +1,17 @@
 import React, { useState } from "react";
-import { dummyUserData } from "../assets/assets";
+// import { dummyUserData } from "../assets/assets";
 import { Pencil } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { updateUser } from "../features/user/userSlice.js";
+import { useAuth } from "@clerk/clerk-react";
+import toast from "react-hot-toast";
 
-const ProfileModal = ({setShowEdit}) => {
-  const user = dummyUserData;
+const ProfileModal = ({ setShowEdit }) => {
+  const dispatch = useDispatch();
+  const { getToken } = useAuth();
+
+  const user = useSelector((state) => state.user.value);
+
   const [editForm, setEditForm] = useState({
     full_name: user.full_name,
     username: user.username,
@@ -15,6 +23,32 @@ const ProfileModal = ({setShowEdit}) => {
 
   const handleSaveProfile = async (e) => {
     e.preventDefault();
+    try {
+      const userData = new FormData();
+      const {
+        full_name,
+        username,
+        bio,
+        profile_picture,
+        cover_photo,
+        location,
+      } = editForm;
+
+      userData.append("username", username);
+      userData.append("full_name", full_name);
+      userData.append("bio", bio);
+      profile_picture && userData.append("profile_picture", profile_picture);
+      cover_photo && userData.append("cover_photo", cover_photo);
+      userData.append("location", location);
+
+      const token = await getToken();
+      return await dispatch(updateUser({ userData, token })).unwrap().then(() => {
+        setShowEdit(false)
+      });
+
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   return (
@@ -25,7 +59,16 @@ const ProfileModal = ({setShowEdit}) => {
             Edit Profile
           </h1>
 
-          <form className="space-y-4" onSubmit={handleSaveProfile}>
+          <form
+            className="space-y-4"
+            onSubmit={(e) => {
+              toast.promise(handleSaveProfile(e), {
+                loading: "Saving...",
+                success: "Profile updated!",
+                error: "Failed to update profile",
+              });
+            }}
+          >
             {/* Profile Picture Input */}
             <div className="flex flex-col items-start gap-3">
               <label
@@ -51,7 +94,7 @@ const ProfileModal = ({setShowEdit}) => {
                     src={
                       editForm.profile_picture
                         ? URL.createObjectURL(editForm.profile_picture)
-                        : user.profile_picture
+                        : user.profile_picture || null
                     }
                     alt=""
                     className="w-24 h-24 rounded-full object-cover mt-2"
@@ -89,7 +132,7 @@ const ProfileModal = ({setShowEdit}) => {
                     src={
                       editForm.cover_photo
                         ? URL.createObjectURL(editForm.cover_photo)
-                        : user.cover_photo
+                        : user.cover_photo || null
                     }
                     alt=""
                     className="w-80 h-40 rounded-lg bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200 object-cover mt-2"
@@ -182,12 +225,21 @@ const ProfileModal = ({setShowEdit}) => {
             </div>
 
             {/* Action Buttons */}
-            <div onClick={() => setShowEdit(false)} className="flex justify-end space-x-3 pt-6">
-              <button type="button" className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition:colors cursor-pointer">
+            <div className="flex justify-end space-x-3 pt-6">
+              <button
+                onClick={() => setShowEdit(false)}
+                type="button"
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition:colors cursor-pointer"
+              >
                 Cancel
               </button>
 
-              <button type="submit" className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 transition cursor-pointer">Save Changes</button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 transition cursor-pointer"
+              >
+                Save Changes
+              </button>
             </div>
           </form>
         </div>

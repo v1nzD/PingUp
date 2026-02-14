@@ -1,13 +1,14 @@
-import React, { use } from "react";
+import React from "react";
 import assets, { dummyUserData } from "../assets/assets.js";
 import { Link, useNavigate } from "react-router-dom";
 import MenuItems from "./MenuItems.jsx";
 import { CirclePlus, LogOut } from "lucide-react";
 import { UserButton, useClerk } from "@clerk/clerk-react";
+import { useSelector } from "react-redux";
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const navigate = useNavigate();
-  const user = dummyUserData;
+  const user = useSelector((state) => state.user.value);
   const { signOut } = useClerk();
 
   return (

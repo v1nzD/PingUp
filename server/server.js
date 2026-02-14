@@ -33,7 +33,7 @@ app.use("/api/inngest", serve({ client: inngest, functions }));
 app.use('/api/users', userRouter)
 
 // Post routes
-app.use('/api/posts', postRouter)
+app.use('/api/post', postRouter)
 
 // Story routes
 app.use('/api/story', storyRouter)

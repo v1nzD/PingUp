@@ -1,33 +1,47 @@
-import React, { useState } from "react";
-import { dummyConnectionsData } from "../assets/assets";
+import React, { useEffect, useState } from "react";
+// import { dummyConnectionsData } from "../assets/assets";
 import { Search } from "lucide-react";
 import UserCard from "../components/UserCard";
 import Loading from "../components/Loading";
+import api from "../api/axios";
+import { useAuth } from "@clerk/clerk-react";
+import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { fetchUser } from "../features/user/userSlice";
 
 const Discover = () => {
+  const dispatch = useDispatch();
+
   const [input, setInput] = useState("");
-  const [users, setUsers] = useState(dummyConnectionsData);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const { getToken } = useAuth();
 
   const handleSearch = async (e) => {
     if (e.key === "Enter") {
-      setLoading(true);
-      setUsers([]);
-      setTimeout(() => {
-        setUsers(dummyConnectionsData);
+      try {
+        setUsers([]);
+        setLoading(true);
+        const { data } = await api.post(
+          "/api/users/discover",
+          { input },
+          { headers: { Authorization: `Bearer ${await getToken()}` } },
+        );
+
+        data.success ? setUsers(data.filteredUsers) : toast.error(data.message);
         setLoading(false);
-      }, 1000);
+        setInput("");
+      } catch (error) {
+        toast.error(error.message);
+      }
+      setLoading(false);
     }
-    //simulate API call
-    // setTimeout(() => {
-    //   const filteredUsers = dummyConnectionsData.filter(user =>
-    //     user.name.toLowerCase().includes(input.toLowerCase()) ||
-    //     user.username.toLowerCase().includes(input.toLowerCase())
-    //   );
-    //   setUsers(filteredUsers);
-    //   setLoading(false);
-    // }, 1000);
   };
+
+  useEffect(() => {
+    getToken().then((token) => dispatch(fetchUser(token)));
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
@@ -59,15 +73,12 @@ const Discover = () => {
 
         {/* Users List */}
         <div className="flex flex-wrap gap-6">
-          {users.map((user) => (
+          {users?.map((user) => (
             <UserCard key={user._id} user={user} />
           ))}
         </div>
 
-        {
-          loading && (<Loading height="60vh" />)
-        }
-
+        {loading && <Loading height="60vh" />}
       </div>
     </div>
   );

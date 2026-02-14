@@ -24,19 +24,15 @@ export const getUserData = async (req, res) => {
 export const updateUserData = async (req, res) => {
   try {
     const { userId } = req.auth;
-    const { username, bio, location, full_name } = req.body;
+    let { username, bio, location, full_name } = req.body;
     const tempUser = await User.findById(userId);
 
     !username && (username = tempUser.username);
 
     if (tempUser.username !== username) {
-      const user = User.findOne({ username });
-      if (user) {
-        // dont change username if already taken
-        username = tempUser.username;
-        return res
-          .status(400)
-          .json({ success: false, message: "Username already taken" });
+      const existingUser = await User.findOne({ username }); 
+      if (existingUser) {
+        return res.status(400).json({ success: false, message: "Username already taken" });
       }
     }
 
@@ -48,7 +44,7 @@ export const updateUserData = async (req, res) => {
     };
 
     const profile = req.files.profile && req.files.profile[0];
-    const cover = req.files.cover && req.files.cover[0];
+    const cover = req.files.cover_photo && req.files.cover_photo[0];
 
     if (profile) {
       const buffer = fs.readFileSync(profile.path);
@@ -69,7 +65,7 @@ export const updateUserData = async (req, res) => {
     }
 
     if (cover) {
-      const buffer = fs.readFileSync(profile.path);
+      const buffer = fs.readFileSync(cover.path);
       const response = await imageKit.upload({
         file: buffer,
         fileName: cover.originalname,
@@ -83,14 +79,14 @@ export const updateUserData = async (req, res) => {
           { width: "1280" },
         ],
       });
-      updatedData.cover_picture = url;
+      updatedData.cover_photo = url;
     }
 
     const user = await User.findByIdAndUpdate(userId, updatedData, {
       new: true,
     });
 
-    res.json({ success: true, message: "User updated", data: user });
+    res.json({ success: true, message: "User updated", user: user });
   } catch (error) {
     console.log(error);
     return res.json({ success: false, message: error.message });
@@ -113,7 +109,7 @@ export const discoverUsers = async (req, res) => {
     });
     // exclude the current user from the results
     const filteredUsers = allUsers.filter((user) => user._id !== userId);
-    res.json({ success: true, message: "Users found", data: filteredUsers });
+    res.json({ success: true, message: "Users found", filteredUsers });
   } catch (error) {
     console.log(error);
     return res.json({ success: false, message: error.message });
@@ -165,7 +161,7 @@ export const unfollowUser = async (req, res) => {
 
     // remove user from following list
     const toUser = await User.findById(id);
-    toUser.followers = toUser.followers.filter((user) => user !== id);
+    toUser.followers = toUser.followers.filter((user) => user !== userId);
     await toUser.save();
 
     res.json({ success: true, message: "User unfollowed successfully" });
@@ -221,7 +217,7 @@ export const sendConnectionRequest = async (req, res) => {
     }
     return res
       .status(400)
-      .json({ success: false, message: "Connection pending" });
+      .json({ success: false, message: "Connection request pending" });
   } catch (error) {
     console.log(error);
     return res.json({ success: false, message: error.message });
@@ -234,6 +230,19 @@ export const getUserConnections = async (req, res) => {
     const { userId } = req.auth;
     const user = await User.findById(userId).populate("connections followers following");
 
+    if (!user) {
+      // Return empty arrays instead of 404
+      return res.json({
+        success: true,
+        data: {
+          connections: [],
+          followers: [],
+          following: [],
+          pendingConnections: [],
+        }
+      });
+    }
+
     const connections = user.connections
     const followers = user.followers
     const following = user.following
@@ -243,7 +252,7 @@ export const getUserConnections = async (req, res) => {
       status: "pending",
     }).populate("from_user_id")).map(connection => connection.from_user_id);
 
-    return res.json({ success: true, message: "Connections found", data: { connections, followers, following, pendingConnections } });
+    return res.json({ success: true, message: "Connections found", connections, followers, following, pendingConnections });
 
   } catch (error) {
     console.log(error);

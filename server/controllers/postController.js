@@ -60,7 +60,7 @@ export const getFeedPosts = async (req, res) => {
         const userIds = [userId, ...user.connections, ...user.following];
         const posts = await Post.find({ user: { $in: userIds } }).populate("user").sort({ createdAt: -1 });
 
-        res.json({ success: true, message: "Posts fetched successfully", data: posts });
+        res.json({ success: true, message: "Posts fetched successfully", posts });
 
     } catch (error) {
         console.log(error);

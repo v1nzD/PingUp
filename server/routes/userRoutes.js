@@ -22,7 +22,7 @@ userRouter.post(
   protect,
   upload.fields([
     { name: "profile", maxCount: 1 },
-    { name: "cover", maxCount: 1 },
+    { name: "cover_photo", maxCount: 1 },
   ]),
   updateUserData,
 );
