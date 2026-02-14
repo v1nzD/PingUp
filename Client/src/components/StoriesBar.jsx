@@ -69,7 +69,7 @@ const StoriesBar = () => {
               {story.content}
             </p>
             <p className="text-white absolute bottom-1 right-2 z-10 text-xs">
-              {moment(story.created_at).fromNow()}
+              {moment(story.createdAt).fromNow()}
             </p>
 
             {/* Check for media type */}
