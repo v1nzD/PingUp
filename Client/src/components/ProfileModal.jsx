@@ -42,10 +42,11 @@ const ProfileModal = ({ setShowEdit }) => {
       userData.append("location", location);
 
       const token = await getToken();
-      return await dispatch(updateUser({ userData, token })).unwrap().then(() => {
-        setShowEdit(false)
-      });
-
+      return await dispatch(updateUser({ userData, token }))
+        .unwrap()
+        .then(() => {
+          setShowEdit(false);
+        });
     } catch (error) {
       toast.error(error.message);
     }
@@ -144,10 +145,10 @@ const ProfileModal = ({ setShowEdit }) => {
               </label>
             </div>
 
-            {/* Other Profile Fields */}
+            {/* Full Name Fields */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Name
+                Full name
                 <input
                   type="text"
                   className="w-full p-3 border border-gray-200 rounded-lg"
@@ -156,22 +157,6 @@ const ProfileModal = ({ setShowEdit }) => {
                     setEditForm({ ...editForm, full_name: e.target.value })
                   }
                   value={editForm.full_name}
-                />
-              </label>
-            </div>
-
-            {/* Full Name Field */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Username
-                <input
-                  type="text"
-                  className="w-full p-3 border border-gray-200 rounded-lg"
-                  placeholder="Enter your username"
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, username: e.target.value })
-                  }
-                  value={editForm.username}
                 />
               </label>
             </div>
