@@ -6,6 +6,7 @@ const initialState = {
   pendingConnections: [],
   followers: [],
   following: [],
+  loading: false,
 };
 
 export const fetchConnections = createAsyncThunk(
@@ -19,22 +20,23 @@ export const fetchConnections = createAsyncThunk(
   },
 );
 
-
 const connectionsSlice = createSlice({
   name: "connections",
   initialState,
   reducers: {},
-  extraReducers: (builder) =>{
+  extraReducers: (builder) => {
+    builder.addCase(fetchConnections.pending, (state) => {
+      state.loading = true;
+    });
     builder.addCase(fetchConnections.fulfilled, (state, action) => {
-        if(action.payload){
-            state.connections = action.payload.connections
-            state.pendingConnections = action.payload.pendingConnections
-            state.followers = action.payload.followers
-            state.following = action.payload.following
-
-        }
-    })
-  }
+      if (action.payload) {
+        state.connections = action.payload.connections;
+        state.pendingConnections = action.payload.pendingConnections;
+        state.followers = action.payload.followers;
+        state.following = action.payload.following;
+      }
+    });
+  },
 });
 
 export default connectionsSlice.reducer;

@@ -57,6 +57,7 @@ const Profile = () => {
       if (data.success) {
         toast.success(data.message);
         dispatch(fetchConnections(token));
+        fetchUser(userId);
       } else {
         toast(data.message);
       }
@@ -77,6 +78,7 @@ const Profile = () => {
       if (data.success) {
         toast.success(data.message);
         dispatch(fetchConnections(token));
+        fetchUser(userId);
       } else {
         toast(data.message);
       }
