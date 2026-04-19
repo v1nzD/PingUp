@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { dummyUserData, dummyPostsData } from "../assets/assets";
 import Loading from "../components/Loading";
 import UserProfileInfo from "../components/UserProfileInfo";
 import PostCard from "../components/PostCard";
@@ -9,11 +8,14 @@ import ProfileModal from "../components/ProfileModal";
 import { useAuth } from "@clerk/clerk-react";
 import api from "../api/axios";
 import toast from "react-hot-toast";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchConnections } from "../features/connections/connectionsSlice";
 
 const Profile = () => {
   const currentUser = useSelector((state) => state.user.value);
+  const { following } = useSelector((state) => state.connections);
   const { getToken } = useAuth();
+  const dispatch = useDispatch();
 
   const { profileId } = useParams();
   const [user, setUser] = useState(null);
@@ -25,7 +27,7 @@ const Profile = () => {
     const token = await getToken();
     try {
       const { data } = await api.post(
-        '/api/users/profiles',
+        "/api/users/profiles",
         { profileId },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -43,6 +45,51 @@ const Profile = () => {
     }
   };
 
+  const handleFollow = async (userId) => {
+    try {
+      const token = await getToken();
+      const { data } = await api.post(
+        "/api/users/follow",
+        { id: userId },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      if (data.success) {
+        toast.success(data.message);
+        dispatch(fetchConnections(token));
+      } else {
+        toast(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const handleUnfollow = async (userId) => {
+    try {
+      const token = await getToken();
+      const { data } = await api.post(
+        "/api/users/unfollow",
+        { id: userId },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      if (data.success) {
+        toast.success(data.message);
+        dispatch(fetchConnections(token));
+      } else {
+        toast(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  // Whether the current user is already following this profile
+  const isFollowing = following.some(
+    (f) => f._id === (profileId || currentUser._id),
+  );
+
   useEffect(() => {
     if (profileId) {
       fetchUser(profileId);
@@ -50,6 +97,10 @@ const Profile = () => {
       fetchUser(currentUser._id);
     }
   }, [profileId, currentUser]);
+
+  useEffect(() => {
+    getToken().then((token) => dispatch(fetchConnections(token)));
+  }, []);
 
   return user ? (
     <div className="relative h-full overflow-y-scroll bg-gray-50 p-6">
@@ -72,6 +123,9 @@ const Profile = () => {
             posts={posts}
             profileId={profileId}
             setShowEdit={setShowEdit}
+            isFollowing={isFollowing}
+            onFollow={() => handleFollow(profileId || currentUser._id)}
+            onUnfollow={() => handleUnfollow(profileId || currentUser._id)}
           />
         </div>
 
@@ -96,7 +150,7 @@ const Profile = () => {
           {/* Posts */}
           {activeTab === "posts" && (
             <div className="mt-6 flex flex-col items-center gap-6">
-              {posts.map((post) => (
+              {[...posts].reverse().map((post) => (
                 <PostCard key={post._id} post={post} />
               ))}
             </div>
