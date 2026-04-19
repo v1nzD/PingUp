@@ -25,6 +25,8 @@ const StoryModal = ({ setShowModal, fetchStories }) => {
   const MAX_VIDEO_DURATION = 60; // seconds
   const MAX_VIDEO_SIZE_MB = 50; // MB
 
+  const hasContent = mode === "text" ? text.trim().length > 0 : media !== null;
+
   const handleMediaUpload = (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -178,13 +180,17 @@ const StoryModal = ({ setShowModal, fetchStories }) => {
           </label>
         </div>
         <button
-          dis
+          disabled={!hasContent}
           onClick={() =>
             toast.promise(handleCreateStory(), {
               loading: "Saving...",
             })
           }
-          className="flex items-center justify-center gap-2 text-white py-3 mt-4 w-full rounded bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 active:scale-95 transition cursor pointer"
+          className={`flex items-center justify-center gap-2 text-white py-3 mt-4 w-full rounded bg-gradient-to-r transition ${
+            hasContent
+              ? "from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 active:scale-95 cursor-pointer"
+              : "from-indigo-300 to-purple-400 opacity-50 cursor-not-allowed"
+          }`}
         >
           <Sparkle size={18} /> Create Story
         </button>
