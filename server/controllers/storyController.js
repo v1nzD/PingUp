@@ -32,10 +32,10 @@ export const addUserStory = async (req, res) => {
     });
 
     // schedule story deletion after 24 hours
-    await inngest.send(({
-        name: 'app/story-delete',
-        data: {storyId: story._id}
-    }))
+    await inngest.send({
+      name: "app/story-delete",
+      data: { storyId: story._id, createdAt: story.createdAt },
+    });
 
     res.json({ success: true });
   } catch (error) {
@@ -52,8 +52,12 @@ export const getStories = async (req, res) => {
     // User connections and followings
     const userIds = [userId, ...user.connections, ...user.following];
 
+    // 24-hour cutoff
+    const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
     const stories = await Story.find({
       user: { $in: userIds },
+      createdAt: { $gte: last24Hours },
     })
       .populate("user")
       .sort({ createdAt: -1 });
