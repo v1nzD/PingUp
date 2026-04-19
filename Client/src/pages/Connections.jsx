@@ -251,6 +251,7 @@ const Connections = () => {
     pendingConnections = [],
     followers = [],
     following = [],
+    loading,
   } = useSelector((state) => state.connections);
 
   // Tabs data
@@ -423,14 +424,16 @@ const Connections = () => {
                   )}
 
                   {/* Followers → Follow Back */}
-                  {currentTab === "Followers" && !isFollowingUser(user._id) && (
-                    <button
-                      onClick={() => handleFollow(user._id)}
-                      className="w-full p-2 text-sm rounded bg-indigo-500 hover:bg-indigo-600 text-white"
-                    >
-                      Follow Back
-                    </button>
-                  )}
+                  {currentTab === "Followers" &&
+                    !loading &&
+                    !isFollowingUser(user._id) && (
+                      <button
+                        onClick={() => handleFollow(user._id)}
+                        className="w-full p-2 text-sm rounded bg-indigo-500 hover:bg-indigo-600 text-white"
+                      >
+                        Follow Back
+                      </button>
+                    )}
 
                   {/* Pending */}
                   {currentTab === "Pending" && (
