@@ -37,9 +37,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         </Link>
       </div>
 
-      <div className="w-full border-t border-gray-200 p-4 px-7 flex items-center justify-between">
-        <div className="flex gap-2 items-center cursor-pointer">
-          <UserButton />
+      <div className="w-full border-t border-gray-200 p-2 px-5 flex items-center justify-between">
+        <div className="flex gap-2 items-center">
+          <div className="w-12 h-12 border-4 border-white shadow-lg rounded-full ">
+            <img src={user.profile_picture} alt="" className="rounded-full" />
+          </div>
           <div>
             <h1 className="text-sm font-medium">{user.full_name}</h1>
             <p className="text-xs text-gray-500">@{user.username}</p>
