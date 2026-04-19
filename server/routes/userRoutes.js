@@ -21,7 +21,7 @@ userRouter.post(
   "/update",
   protect,
   upload.fields([
-    { name: "profile", maxCount: 1 },
+    { name: "profile_picture", maxCount: 1 },
     { name: "cover_photo", maxCount: 1 },
   ]),
   updateUserData,
@@ -33,7 +33,7 @@ userRouter.post("/unfollow", protect, unfollowUser);
 userRouter.post("/connect", protect, sendConnectionRequest);
 userRouter.post("/accept", protect, acceptConnectionRequest);
 userRouter.get("/connections", protect, getUserConnections);
-userRouter.post('/profiles', protect, getUserProfile)
-userRouter.get('/recent-messages', protect, getUserRecentMessages)
+userRouter.post("/profiles", protect, getUserProfile);
+userRouter.get("/recent-messages", protect, getUserRecentMessages);
 
 export default userRouter;

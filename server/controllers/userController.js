@@ -30,9 +30,11 @@ export const updateUserData = async (req, res) => {
     !username && (username = tempUser.username);
 
     if (tempUser.username !== username) {
-      const existingUser = await User.findOne({ username }); 
+      const existingUser = await User.findOne({ username });
       if (existingUser) {
-        return res.status(400).json({ success: false, message: "Username already taken" });
+        return res
+          .status(400)
+          .json({ success: false, message: "Username already taken" });
       }
     }
 
@@ -43,7 +45,7 @@ export const updateUserData = async (req, res) => {
       full_name,
     };
 
-    const profile = req.files.profile && req.files.profile[0];
+    const profile = req.files.profile_picture && req.files.profile_picture[0];
     const cover = req.files.cover_photo && req.files.cover_photo[0];
 
     if (profile) {
@@ -200,16 +202,18 @@ export const sendConnectionRequest = async (req, res) => {
     });
 
     if (!connection) {
-      const newConnection = await Connection.create({ from_user_id: userId, to_user_id: id });
+      const newConnection = await Connection.create({
+        from_user_id: userId,
+        to_user_id: id,
+      });
 
       // runs inngest function to send connection request reminder email
       await inngest.send({
-        name: 'app/connection-request',
-        data: {connectionId: newConnection._id}
-      })
+        name: "app/connection-request",
+        data: { connectionId: newConnection._id },
+      });
 
       return res.json({ success: true, message: "Connection request sent" });
-      
     } else if (connection && connection.status === "accepted") {
       return res
         .status(400)
@@ -228,7 +232,9 @@ export const sendConnectionRequest = async (req, res) => {
 export const getUserConnections = async (req, res) => {
   try {
     const { userId } = req.auth;
-    const user = await User.findById(userId).populate("connections followers following");
+    const user = await User.findById(userId).populate(
+      "connections followers following",
+    );
 
     if (!user) {
       // Return empty arrays instead of 404
@@ -239,21 +245,29 @@ export const getUserConnections = async (req, res) => {
           followers: [],
           following: [],
           pendingConnections: [],
-        }
+        },
       });
     }
 
-    const connections = user.connections
-    const followers = user.followers
-    const following = user.following
+    const connections = user.connections;
+    const followers = user.followers;
+    const following = user.following;
 
-    const pendingConnections = (await Connection.find({
-      to_user_id: userId,
-      status: "pending",
-    }).populate("from_user_id")).map(connection => connection.from_user_id);
+    const pendingConnections = (
+      await Connection.find({
+        to_user_id: userId,
+        status: "pending",
+      }).populate("from_user_id")
+    ).map((connection) => connection.from_user_id);
 
-    return res.json({ success: true, message: "Connections found", connections, followers, following, pendingConnections });
-
+    return res.json({
+      success: true,
+      message: "Connections found",
+      connections,
+      followers,
+      following,
+      pendingConnections,
+    });
   } catch (error) {
     console.log(error);
     return res.json({ success: false, message: error.message });
@@ -289,7 +303,6 @@ export const acceptConnectionRequest = async (req, res) => {
     await connection.save();
 
     res.json({ success: true, message: "Connection request accepted" });
-
   } catch (error) {
     console.log(error);
     return res.json({ success: false, message: error.message });
@@ -299,17 +312,16 @@ export const acceptConnectionRequest = async (req, res) => {
 // Get user profile
 export const getUserProfile = async (req, res) => {
   try {
-    const { profileId } = req.body
-    const profile = await User.findById(profileId)
+    const { profileId } = req.body;
+    const profile = await User.findById(profileId);
 
-    if(!profile){
-      return res.json({success: false, message: "Profile not found"})
+    if (!profile) {
+      return res.json({ success: false, message: "Profile not found" });
     }
 
-    const posts = await Post.find({user: profileId}).populate('user')
-    res.json({success: true, profile, posts})
+    const posts = await Post.find({ user: profileId }).populate("user");
+    res.json({ success: true, profile, posts });
   } catch (error) {
     return res.json({ success: false, message: error.message });
-    
   }
-}
+};
