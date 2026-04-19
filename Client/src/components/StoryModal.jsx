@@ -178,6 +178,7 @@ const StoryModal = ({ setShowModal, fetchStories }) => {
           </label>
         </div>
         <button
+          dis
           onClick={() =>
             toast.promise(handleCreateStory(), {
               loading: "Saving...",
