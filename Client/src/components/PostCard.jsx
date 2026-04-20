@@ -1,12 +1,12 @@
 import { BadgeCheck, Heart, MessageCircle, Share2 } from "lucide-react";
 import React, { useState } from "react";
 import moment from "moment";
-// import { dummyUserData } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useAuth } from "@clerk/clerk-react";
 import api from "../api/axios";
 import toast from "react-hot-toast";
+import CommentModal from "./CommentModal";
 
 const PostCard = ({ post }) => {
   const postWithHastags = post.content.replace(
@@ -15,6 +15,10 @@ const PostCard = ({ post }) => {
   );
   const [likes, setLikes] = useState(post.likes_count || 0);
   const currentUser = useSelector((state) => state.user.value);
+  const [showCommentModal, setShowCommentModal] = useState(false);
+  const [commentCount, setCommentCount] = useState(
+    post.comments_count?.length || 0,
+  );
 
   const { getToken } = useAuth();
 
@@ -102,14 +106,21 @@ const PostCard = ({ post }) => {
           <span>{likes.length}</span>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div
+          className="flex items-center gap-1 cursor-pointer hover:text-indigo-600 transition"
+          onClick={() => setShowCommentModal(true)}
+        >
           <MessageCircle className="w-4 h-4" />
-          <span>{12}</span>
-        </div>
-
-        <div className="flex items-center gap-1">
-          <Share2 className="w-4 h-4" />
-          <span>{7}</span>
+          <span>{commentCount}</span>
+          {showCommentModal && (
+            <CommentModal
+              post={post}
+              likes={likes}
+              onLike={handleLike}
+              onClose={() => setShowCommentModal(false)}
+              onCommentCountChange={setCommentCount}
+            />
+          )}
         </div>
       </div>
     </div>
