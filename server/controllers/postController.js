@@ -80,6 +80,8 @@ export const likePost = async (req, res) => {
       return res.json({ success: false, message: "Post not found" });
     }
 
+    const postOwnerId = post.user;
+
     // post already liked by user, unlike it
     if (post.likes_count.includes(userId)) {
       post.likes_count = post.likes_count.filter((user) => user !== userId);
@@ -89,6 +91,17 @@ export const likePost = async (req, res) => {
       // like the post
       post.likes_count.push(userId);
       await post.save();
+
+      // Only notify if the liker is NOT the post owner
+      if (postOwnerId !== userId) {
+        await Notification.create({
+          recipient: postOwnerId,
+          sender: userId,
+          type: "like",
+          post: postId,
+        });
+      }
+
       return res.json({ success: true, message: "Post liked" });
     }
   } catch (error) {
@@ -118,6 +131,19 @@ export const addComment = async (req, res) => {
       $push: { comments_count: comment._id },
     });
 
+    const postOwnerId = post.user;
+
+    // Only notify if the commenter is NOT the post owner
+    if (postOwnerId !== userId) {
+      await Notification.create({
+        recipient: postOwnerId,
+        sender: userId,
+        type: "comment",
+        post: postId,
+        comment: text, // stored for quick preview on the notifications page
+      });
+    }
+
     await comment.populate("user");
     res.json({ success: true, message: "Comment added", comment });
   } catch (error) {
@@ -144,6 +170,14 @@ export const deleteComment = async (req, res) => {
 
     await Post.findByIdAndUpdate(comment.post, {
       $pull: { comments_count: comment._id },
+    });
+
+    // Clean up the associated comment notification
+    await Notification.findOneAndDelete({
+      sender: userId,
+      type: "comment",
+      post: comment.post,
+      comment: comment.text,
     });
 
     await comment.deleteOne();
