@@ -18,7 +18,7 @@ import { fetchConnections } from "./features/connections/connectionsSlice.js";
 import { addMessage } from "./features/messages/messagesSlice.js";
 import toast from "react-hot-toast";
 import Notification from "./components/Notification.jsx";
-
+import Notifications from "./components/Notifications.jsx";
 
 const App = () => {
   const { user, isLoaded } = useUser();
@@ -57,7 +57,7 @@ const App = () => {
     if (!userId) return;
 
     const eventSource = new EventSource(
-      `${import.meta.env.VITE_BASEURL}/api/message/${userId}`
+      `${import.meta.env.VITE_BASEURL}/api/message/${userId}`,
     );
 
     console.log("SSE Connected:", userId);
@@ -66,8 +66,7 @@ const App = () => {
       const message = JSON.parse(event.data);
 
       // Get current chat user ID from URL
-      const currentChatUserId =
-        pathnameRef.current.pathname.split("/").pop();
+      const currentChatUserId = pathnameRef.current.pathname.split("/").pop();
 
       // Handle both populated and non-populated structures safely
       const senderId =
@@ -80,9 +79,9 @@ const App = () => {
         dispatch(addMessage(message));
       } else {
         // Show toast notification
-        toast.custom((t)=>(
-          <Notification t={t} message={message} />
-        ), {position: "bottom-right"})
+        toast.custom((t) => <Notification t={t} message={message} />, {
+          position: "bottom-right",
+        });
       }
     };
 
@@ -115,6 +114,7 @@ const App = () => {
           <Route path="profile" element={<Profile />} />
           <Route path="profile/:profileId" element={<Profile />} />
           <Route path="create-post" element={<CreatePost />} />
+          <Route path="notifications" element={<Notifications />} />
         </Route>
       </Routes>
     </>
