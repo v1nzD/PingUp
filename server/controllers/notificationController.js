@@ -11,11 +11,11 @@ export const getNotifications = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(50);
 
-    // Manually attach sender profile (same pattern as your codebase — Clerk userId stored as string)
+    // Manually attach sender profile
     const notificationsWithSender = await Promise.all(
       notifications.map(async (notification) => {
         const sender = await User.findById(notification.sender).select(
-          "full_name username profile_picture is_verified",
+          "full_name username profile_picture",
         );
         return {
           ...notification.toObject(),
