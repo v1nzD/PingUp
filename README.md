@@ -2,6 +2,7 @@
 
 PingUp is a full-stack social media platform that allows users to connect, share posts, interact through likes and comments, and engage with real-time content. The app is designed with scalability, performance, and a modern UI/UX in mind.
 
+**Live: https://ping-up-liart-eight.vercel.app/**
 ---
 
 ## Features
